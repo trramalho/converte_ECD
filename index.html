@@ -541,6 +541,118 @@
             flex-wrap: wrap;
         }
 
+        /* Estilos para botões de ação nas linhas */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-action {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            min-width: 70px;
+        }
+
+        .btn-edit {
+            background: linear-gradient(45deg, #ffaa00, #ff8800);
+            color: #000000;
+            box-shadow: 0 4px 15px rgba(255, 170, 0, 0.3);
+        }
+
+        .btn-edit:hover {
+            background: linear-gradient(45deg, #ff8800, #ffaa00);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 170, 0, 0.5);
+        }
+
+        .btn-delete {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-delete:hover {
+            background: linear-gradient(45deg, #ee5a52, #ff6b6b);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .btn-save-edit {
+            background: linear-gradient(45deg, #00ff88, #32cd32);
+            color: #000000;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-save-edit:hover {
+            background: linear-gradient(45deg, #32cd32, #00ff88);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .btn-cancel-edit {
+            background: linear-gradient(45deg, #888888, #666666);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(136, 136, 136, 0.3);
+        }
+
+        .btn-cancel-edit:hover {
+            background: linear-gradient(45deg, #666666, #888888);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(136, 136, 136, 0.5);
+        }
+
+        /* Estilo para linha em modo de edição */
+        .editing-row {
+            background: rgba(255, 170, 0, 0.1) !important;
+            border: 2px solid rgba(255, 170, 0, 0.3);
+        }
+
+        .editing-row .relation-input {
+            border-color: #ffaa00;
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+        }
+
+        /* Estilos para botões de ação em lote */
+        .bulk-actions-container {
+            margin-top: 15px;
+            padding: 20px;
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid rgba(255, 107, 107, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .bulk-actions-title {
+            font-size: 1.2rem;
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        .bulk-actions-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-bulk-delete {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: #ffffff;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-bulk-delete:hover {
+            background: linear-gradient(45deg, #ee5a52, #ff6b6b);
+            box-shadow: 0 12px 35px rgba(255, 107, 107, 0.6);
+        }
+
         /* Responsividade melhorada */
         @media (max-width: 768px) {
             .container {
@@ -574,6 +686,21 @@
             }
 
             .save-load-buttons {
+                flex-direction: column;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .btn-action {
+                min-width: 60px;
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+
+            .bulk-actions-buttons {
                 flex-direction: column;
             }
         }
@@ -624,6 +751,14 @@
                 <div id="relationProgressFill" class="progress-fill"></div>
             </div>
 
+            <!-- Quadro de ações em lote -->
+            <div id="bulkActionsContainer" class="bulk-actions-container hidden">
+                <div class="bulk-actions-title">🗑️ Ações em Lote</div>
+                <div class="bulk-actions-buttons">
+                    <button class="btn btn-bulk-delete" onclick="deleteSelectedRows()">🗑️ Excluir Selecionadas</button>
+                </div>
+            </div>
+
             <!-- Quadro de inserção em lote -->
             <div id="bulkInsertContainer" class="bulk-insert-container hidden">
                 <div class="bulk-insert-title">⚡ Inserção em Lote de Código Domínio</div>
@@ -660,6 +795,7 @@
                             <th>Código SPED</th>
                             <th>Nome da Conta</th>
                             <th>Código Domínio</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="relationTableBody">
@@ -922,6 +1058,7 @@
             
             relationData.forEach((item, index) => {
                 const row = document.createElement('tr');
+                row.setAttribute('data-index', index);
                 row.innerHTML = `
                     <td class="select-column">
                         <input type="checkbox" class="row-checkbox" data-index="${index}" onchange="updateSelectionInfo()">
@@ -935,11 +1072,18 @@
                         <input type="text" class="relation-input" value="${item.codigoDominio}" 
                                onchange="updateRelationCode(${index}, this.value)" placeholder="Digite o código domínio">
                     </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editRow(${index})">✏️ Editar</button>
+                            <button class="btn-action btn-delete" onclick="deleteRow(${index})">🗑️ Excluir</button>
+                        </div>
+                    </td>
                 `;
                 relationTableBody.appendChild(row);
             });
 
             relationTableContainer.classList.remove('hidden');
+            document.getElementById('bulkActionsContainer').classList.remove('hidden');
             updateSelectionInfo();
         }
 
@@ -1320,6 +1464,164 @@
         // Função para formatar nome do arquivo (equivalente ao nomearq do AWK)
         function nomeArq(valor) {
             return valor.replace(/ /g, '_');
+        }
+
+        // Funções para edição e exclusão de linhas
+        function editRow(index) {
+            const row = document.querySelector(`tr[data-index="${index}"]`);
+            if (!row) return;
+
+            // Verificar se já está em modo de edição
+            if (row.classList.contains('editing-row')) {
+                return;
+            }
+
+            // Adicionar classe de edição
+            row.classList.add('editing-row');
+
+            // Salvar valores originais
+            const originalData = { ...relationData[index] };
+            row.setAttribute('data-original', JSON.stringify(originalData));
+
+            // Tornar campos editáveis
+            const cells = row.querySelectorAll('td');
+            
+            // Cod. Nat. (índice 1)
+            cells[1].innerHTML = `<input type="text" class="relation-input" value="${originalData.codNat}" onchange="updateTempData(${index}, 'codNat', this.value)">`;
+            
+            // Tipo (índice 2)
+            cells[2].innerHTML = `<input type="text" class="relation-input" value="${originalData.tipo}" onchange="updateTempData(${index}, 'tipo', this.value)">`;
+            
+            // Nível (índice 3)
+            cells[3].innerHTML = `<input type="text" class="relation-input" value="${originalData.nivel}" onchange="updateTempData(${index}, 'nivel', this.value)">`;
+            
+            // Código SPED (índice 4)
+            cells[4].innerHTML = `<input type="text" class="relation-input" value="${originalData.codigo}" onchange="updateTempData(${index}, 'codigo', this.value)">`;
+            
+            // Nome da Conta (índice 5)
+            cells[5].innerHTML = `<input type="text" class="relation-input" value="${originalData.nome}" onchange="updateTempData(${index}, 'nome', this.value)">`;
+
+            // Atualizar botões de ação
+            cells[7].innerHTML = `
+                <div class="action-buttons">
+                    <button class="btn-action btn-save-edit" onclick="saveEdit(${index})">💾 Salvar</button>
+                    <button class="btn-action btn-cancel-edit" onclick="cancelEdit(${index})">❌ Cancelar</button>
+                </div>
+            `;
+        }
+
+        function updateTempData(index, field, value) {
+            relationData[index][field] = value;
+        }
+
+        function saveEdit(index) {
+            const row = document.querySelector(`tr[data-index="${index}"]`);
+            if (!row) return;
+
+            // Remover classe de edição
+            row.classList.remove('editing-row');
+            row.removeAttribute('data-original');
+
+            // Recriar a linha com os novos dados
+            const item = relationData[index];
+            row.innerHTML = `
+                <td class="select-column">
+                    <input type="checkbox" class="row-checkbox" data-index="${index}" onchange="updateSelectionInfo()">
+                </td>
+                <td>${item.codNat}</td>
+                <td>${item.tipo}</td>
+                <td>${item.nivel}</td>
+                <td>${item.codigo}</td>
+                <td>${item.nome}</td>
+                <td>
+                    <input type="text" class="relation-input" value="${item.codigoDominio}" 
+                           onchange="updateRelationCode(${index}, this.value)" placeholder="Digite o código domínio">
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-action btn-edit" onclick="editRow(${index})">✏️ Editar</button>
+                        <button class="btn-action btn-delete" onclick="deleteRow(${index})">🗑️ Excluir</button>
+                    </div>
+                </td>
+            `;
+
+            showStatus(relationStatus, '✅ Linha editada com sucesso!', 'success');
+        }
+
+        function cancelEdit(index) {
+            const row = document.querySelector(`tr[data-index="${index}"]`);
+            if (!row) return;
+
+            // Restaurar dados originais
+            const originalDataStr = row.getAttribute('data-original');
+            if (originalDataStr) {
+                const originalData = JSON.parse(originalDataStr);
+                relationData[index] = originalData;
+            }
+
+            // Remover classe de edição
+            row.classList.remove('editing-row');
+            row.removeAttribute('data-original');
+
+            // Recriar a linha com os dados originais
+            const item = relationData[index];
+            row.innerHTML = `
+                <td class="select-column">
+                    <input type="checkbox" class="row-checkbox" data-index="${index}" onchange="updateSelectionInfo()">
+                </td>
+                <td>${item.codNat}</td>
+                <td>${item.tipo}</td>
+                <td>${item.nivel}</td>
+                <td>${item.codigo}</td>
+                <td>${item.nome}</td>
+                <td>
+                    <input type="text" class="relation-input" value="${item.codigoDominio}" 
+                           onchange="updateRelationCode(${index}, this.value)" placeholder="Digite o código domínio">
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-action btn-edit" onclick="editRow(${index})">✏️ Editar</button>
+                        <button class="btn-action btn-delete" onclick="deleteRow(${index})">🗑️ Excluir</button>
+                    </div>
+                </td>
+            `;
+        }
+
+        function deleteRow(index) {
+            if (confirm('Tem certeza que deseja excluir esta linha?')) {
+                // Remover do array de dados
+                relationData.splice(index, 1);
+                
+                // Recriar a tabela com os novos índices
+                displayRelationTable();
+                
+                showStatus(relationStatus, '✅ Linha excluída com sucesso!', 'success');
+            }
+        }
+
+        function deleteSelectedRows() {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Selecione pelo menos uma linha para excluir.');
+                return;
+            }
+
+            if (confirm(`Tem certeza que deseja excluir ${checkboxes.length} linha(s) selecionada(s)?`)) {
+                // Coletar índices em ordem decrescente para evitar problemas de reindexação
+                const indices = Array.from(checkboxes)
+                    .map(checkbox => parseInt(checkbox.dataset.index))
+                    .sort((a, b) => b - a);
+
+                // Remover linhas do array de dados
+                indices.forEach(index => {
+                    relationData.splice(index, 1);
+                });
+
+                // Recriar a tabela
+                displayRelationTable();
+                
+                showStatus(relationStatus, `✅ ${indices.length} linha(s) excluída(s) com sucesso!`, 'success');
+            }
         }
 
         // Event listeners para fechar modal com ESC
