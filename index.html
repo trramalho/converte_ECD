@@ -98,6 +98,43 @@
             text-shadow: 0 0 15px rgba(100, 200, 255, 0.6);
             display: flex;
             align-items: center;
+            cursor: pointer;
+        }
+
+        .step-title.collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .step-title.collapsible:hover {
+            color: #87ceeb;
+        }
+
+        .step-content {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .step-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+        }
+
+        .step-content.expanded {
+            max-height: 2000px;
+            opacity: 1;
+            margin-top: 20px;
+        }
+
+        .collapse-icon {
+            margin-left: auto;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .collapse-icon.rotated {
+            transform: rotate(180deg);
         }
 
         .file-input-container {
@@ -199,6 +236,17 @@
         .btn-save:hover {
             background: linear-gradient(45deg, #8e44ad, #9b59b6);
             box-shadow: 0 12px 35px rgba(155, 89, 182, 0.6);
+        }
+
+        .btn-download {
+            background: linear-gradient(45deg, #ff9500, #ff7700);
+            color: #ffffff;
+            box-shadow: 0 8px 25px rgba(255, 149, 0, 0.4);
+        }
+
+        .btn-download:hover {
+            background: linear-gradient(45deg, #ff7700, #ff9500);
+            box-shadow: 0 12px 35px rgba(255, 149, 0, 0.6);
         }
 
         .status {
@@ -541,6 +589,17 @@
             flex-wrap: wrap;
         }
 
+        /* Estilo para o botão de download */
+        .download-container {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 149, 0, 0.1);
+            border: 2px solid rgba(255, 149, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
         /* Responsividade melhorada */
         @media (max-width: 768px) {
             .container {
@@ -592,74 +651,79 @@
                 <span class="step-number">1</span>
                 📁 Importar Arquivo SPED ECD
             </div>
-            <div class="file-input-container">
-                <input type="file" id="spedFile" class="file-input" accept=".txt" onchange="importSped(event)">
-                <label for="spedFile" class="file-input-label">
-                    📂 Selecionar Arquivo SPED (.txt)
-                </label>
+            <div class="step-content expanded">
+                <div class="file-input-container">
+                    <input type="file" id="spedFile" class="file-input" accept=".txt" onchange="importSped(event)">
+                    <label for="spedFile" class="file-input-label">
+                        📂 Selecionar Arquivo SPED (.txt)
+                    </label>
+                </div>
+                <div id="importStatus" class="status hidden"></div>
+                <div id="importProgress" class="progress-bar hidden">
+                    <div id="importProgressFill" class="progress-fill"></div>
+                </div>
+                <div id="fileInfo" class="file-info hidden"></div>
             </div>
-            <div id="importStatus" class="status hidden"></div>
-            <div id="importProgress" class="progress-bar hidden">
-                <div id="importProgressFill" class="progress-fill"></div>
-            </div>
-            <div id="fileInfo" class="file-info hidden"></div>
         </div>
 
-        <!-- Passo 2: Gerar Relação -->
+        <!-- Passo 2: Gerar Relação (Recolhível) -->
         <div class="step-container">
-            <div class="step-title">
+            <div class="step-title collapsible" onclick="toggleStepContent('step2')">
                 <span class="step-number">2</span>
                 🔗 Gerar Relação de Contas
+                <span class="collapse-icon" id="step2-icon">▼</span>
             </div>
-            <button id="generateRelationBtn" class="btn btn-secondary" onclick="generateRelation()" disabled>
-                ⚡ Gerar Relação de Contas
-            </button>
-            <div id="relationStatus" class="status hidden"></div>
-            <div id="relationProgress" class="progress-bar hidden">
-                <div id="relationProgressFill" class="progress-fill"></div>
-            </div>
+            <div class="step-content collapsed" id="step2-content">
+                <button id="generateRelationBtn" class="btn btn-secondary" onclick="generateRelation()" disabled>
+                    ⚡ Gerar Relação de Contas
+                </button>
+                <div id="relationStatus" class="status hidden"></div>
+                <div id="relationProgress" class="progress-bar hidden">
+                    <div id="relationProgressFill" class="progress-fill"></div>
+                </div>
 
-            <!-- Quadro de inserção em lote -->
-            <div id="bulkInsertContainer" class="bulk-insert-container hidden">
-                <div class="bulk-insert-title">⚡ Inserção em Lote de Código Domínio</div>
-                <div class="bulk-insert-controls">
-                    <input type="text" id="bulkCodeInput" class="bulk-input" placeholder="Digite o código domínio para aplicar">
-                    <button class="btn btn-warning" onclick="applyBulkCode()">Aplicar às Selecionadas</button>
-                    <div class="checkbox-container">
-                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
-                        <label for="selectAllCheckbox">Selecionar Todas</label>
+                <!-- Quadro de inserção em lote -->
+                <div id="bulkInsertContainer" class="bulk-insert-container hidden">
+                    <div class="bulk-insert-title">⚡ Inserção em Lote de Código Domínio</div>
+                    <div class="bulk-insert-controls">
+                        <input type="text" id="bulkCodeInput" class="bulk-input" placeholder="Digite o código domínio para aplicar">
+                        <button class="btn btn-warning" onclick="applyBulkCode()">Aplicar às Selecionadas</button>
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                            <label for="selectAllCheckbox">Selecionar Todas</label>
+                        </div>
+                    </div>
+                    <div id="selectionInfo" class="selection-info">Nenhuma linha selecionada</div>
+                </div>
+
+                <!-- Quadro de salvar/carregar relação -->
+                <div id="saveLoadContainer" class="save-load-container hidden">
+                    <div class="save-load-title">💾 Gerenciar Relação de Contas</div>
+                    <div class="save-load-buttons">
+                        <button class="btn btn-save" onclick="saveRelation()">💾 Salvar Relação</button>
+                        <input type="file" id="loadRelationFile" class="file-input" accept=".json" onchange="loadRelation(event)">
+                        <label for="loadRelationFile" class="btn btn-save">📁 Carregar Relação</label>
                     </div>
                 </div>
-                <div id="selectionInfo" class="selection-info">Nenhuma linha selecionada</div>
-            </div>
 
-            <!-- Quadro de salvar/carregar relação -->
-            <div id="saveLoadContainer" class="save-load-container hidden">
-                <div class="save-load-title">💾 Gerenciar Relação de Contas</div>
-                <div class="save-load-buttons">
-                    <button class="btn btn-save" onclick="saveRelation()">💾 Salvar Relação</button>
-                    <input type="file" id="loadRelationFile" class="file-input" accept=".json" onchange="loadRelation(event)">
-                    <label for="loadRelationFile" class="btn btn-save">📁 Carregar Relação</label>
+                <!-- Tabela de relação -->
+                <div id="relationTableContainer" class="hidden">
+                    <table class="relation-table">
+                        <thead>
+                            <tr>
+                                <th class="select-column">✓</th>
+                                <th>Cod. Nat.</th>
+                                <th>Tipo</th>
+                                <th>Nível</th>
+                                <th>Código SPED</th>
+                                <th>Nome da Conta</th>
+                                <th>Código Domínio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="relationTableBody">
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-
-            <!-- Tabela de relação -->
-            <div id="relationTableContainer" class="hidden">
-                <table class="relation-table">
-                    <thead>
-                        <tr>
-                            <th class="select-column">✓</th>
-                            <th>Cod. Nat.</th>
-                            <th>Tipo</th>
-                            <th>Nível</th>
-                            <th>Código SPED</th>
-                            <th>Nome da Conta</th>
-                            <th>Código Domínio</th>
-                        </tr>
-                    </thead>
-                    <tbody id="relationTableBody">
-                    </tbody>
-                </table>
             </div>
         </div>
 
@@ -669,24 +733,34 @@
                 <span class="step-number">3</span>
                 📄 Gerar Arquivos de Saída
             </div>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <button id="generateFileBtn" class="btn" onclick="generateFile()" disabled>
-                    📊 Gerar Arquivo para Importação
-                </button>
-                <button id="generateBalanceBtn" class="btn btn-balance" onclick="showDateModal()" disabled>
-                    ⚖️ Gerar Balanço de Abertura
-                </button>
-            </div>
-            
-            <div id="fileStatus" class="status hidden"></div>
-            <div id="fileProgress" class="progress-bar hidden">
-                <div id="fileProgressFill" class="progress-fill"></div>
-            </div>
+            <div class="step-content expanded">
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button id="generateFileBtn" class="btn" onclick="generateFile()" disabled>
+                        📊 Gerar Arquivo para Importação
+                    </button>
+                    <button id="generateBalanceBtn" class="btn btn-balance" onclick="showDateModal()" disabled>
+                        ⚖️ Gerar Balanço de Abertura
+                    </button>
+                </div>
+                
+                <div id="fileStatus" class="status hidden"></div>
+                <div id="fileProgress" class="progress-bar hidden">
+                    <div id="fileProgressFill" class="progress-fill"></div>
+                </div>
 
-            <div id="balanceStatus" class="status hidden"></div>
-            <div id="balanceProgress" class="progress-bar hidden">
-                <div id="balanceProgressFill" class="progress-fill"></div>
+                <div id="balanceStatus" class="status hidden"></div>
+                <div id="balanceProgress" class="progress-bar hidden">
+                    <div id="balanceProgressFill" class="progress-fill"></div>
+                </div>
             </div>
+        </div>
+
+        <!-- Botão de Download do Conjunto SPED.xml -->
+        <div class="download-container">
+            <h3 style="color: #ff9500; margin-bottom: 15px; text-shadow: 0 0 10px rgba(255, 149, 0, 0.5);">📦 Download de Recursos</h3>
+            <button class="btn btn-download" onclick="downloadConjuntoSped()">
+                📥 Baixar Conjunto de Dados
+            </button>
         </div>
     </div>
 
@@ -732,6 +806,32 @@
         const selectionInfo = document.getElementById('selectionInfo');
         const dateModal = document.getElementById('dateModal');
         const balanceDate = document.getElementById('balanceDate');
+
+        // Função para alternar conteúdo recolhível
+        function toggleStepContent(stepId) {
+            const content = document.getElementById(stepId + '-content');
+            const icon = document.getElementById(stepId + '-icon');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                content.classList.add('expanded');
+                icon.classList.add('rotated');
+            } else {
+                content.classList.remove('expanded');
+                content.classList.add('collapsed');
+                icon.classList.remove('rotated');
+            }
+        }
+
+        // Função para download do Conjunto SPED.xml
+        function downloadConjuntoSped() {
+            const link = document.createElement('a');
+            link.href = 'Conjunto SPED.xml';
+            link.download = 'Conjunto SPED.xml';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
         function showStatus(element, message, type) {
             element.className = `status ${type}`;
@@ -892,116 +992,135 @@
                         const account = accountsData.find(acc => acc.codigo === codConta);
                         if (account) {
                             relationData.push({
-                                ...account,
-                                codigoDominio: '' // Deixar vazio conforme solicitado
+                                codNat: account.codNat,
+                                tipo: account.tipo,
+                                nivel: account.nivel,
+                                codigo: account.codigo,
+                                nome: account.nome,
+                                codigoDominio: '',
+                                selected: false
                             });
                         }
                     });
 
                     displayRelationTable();
-                    showStatus(relationStatus, `✅ Relação gerada com sucesso! ${relationData.length} contas encontradas.`, 'success');
+                    showStatus(relationStatus, `✅ Relação gerada com ${relationData.length} contas!`, 'success');
+                    generateRelationBtn.disabled = false;
                     generateFileBtn.disabled = false;
-                    generateFileBtn.classList.add('glow');
                     generateBalanceBtn.disabled = false;
+                    generateFileBtn.classList.add('glow');
                     generateBalanceBtn.classList.add('glow');
                     
-                    // Mostrar quadros de inserção em lote e salvar/carregar
+                    // Mostrar controles adicionais
                     bulkInsertContainer.classList.remove('hidden');
                     saveLoadContainer.classList.remove('hidden');
                 }
-            }, 200);
+            }, 100);
         }
 
         function displayRelationTable() {
             relationTableBody.innerHTML = '';
             
-            relationData.forEach((item, index) => {
+            relationData.forEach((relation, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="select-column">
-                        <input type="checkbox" class="row-checkbox" data-index="${index}" onchange="updateSelectionInfo()">
+                        <input type="checkbox" class="row-checkbox" onchange="updateSelection(${index}, this.checked)">
                     </td>
-                    <td>${item.codNat}</td>
-                    <td>${item.tipo}</td>
-                    <td>${item.nivel}</td>
-                    <td>${item.codigo}</td>
-                    <td>${item.nome}</td>
+                    <td>${relation.codNat}</td>
+                    <td>${relation.tipo}</td>
+                    <td>${relation.nivel}</td>
+                    <td>${relation.codigo}</td>
+                    <td>${relation.nome}</td>
                     <td>
-                        <input type="text" class="relation-input" value="${item.codigoDominio}" 
-                               onchange="updateRelationCode(${index}, this.value)" placeholder="Digite o código domínio">
+                        <input type="text" class="relation-input" value="${relation.codigoDominio}" 
+                               onchange="updateDominioCode(${index}, this.value)" 
+                               placeholder="Digite o código domínio">
                     </td>
                 `;
                 relationTableBody.appendChild(row);
             });
-
+            
             relationTableContainer.classList.remove('hidden');
             updateSelectionInfo();
         }
 
-        function updateRelationCode(index, newCode) {
-            relationData[index].codigoDominio = newCode;
-        }
-
-        function toggleSelectAll() {
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAllCheckbox.checked;
-            });
+        function updateSelection(index, selected) {
+            relationData[index].selected = selected;
             updateSelectionInfo();
+            updateSelectAllCheckbox();
         }
 
         function updateSelectionInfo() {
-            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
-            const count = checkboxes.length;
-            selectionInfo.textContent = count === 0 ? 'Nenhuma linha selecionada' : `${count} linha(s) selecionada(s)`;
+            const selectedCount = relationData.filter(r => r.selected).length;
+            selectionInfo.textContent = selectedCount > 0 
+                ? `${selectedCount} linha(s) selecionada(s)` 
+                : 'Nenhuma linha selecionada';
+        }
+
+        function updateSelectAllCheckbox() {
+            const selectedCount = relationData.filter(r => r.selected).length;
+            const totalCount = relationData.length;
+            
+            selectAllCheckbox.checked = selectedCount === totalCount && totalCount > 0;
+            selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < totalCount;
+        }
+
+        function toggleSelectAll() {
+            const selectAll = selectAllCheckbox.checked;
+            relationData.forEach(relation => relation.selected = selectAll);
+            
+            // Atualizar checkboxes na tabela
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = selectAll);
+            
+            updateSelectionInfo();
+        }
+
+        function updateDominioCode(index, value) {
+            relationData[index].codigoDominio = value;
         }
 
         function applyBulkCode() {
-            const code = bulkCodeInput.value.trim();
-            if (!code) {
-                alert('Por favor, digite um código domínio.');
+            const bulkCode = bulkCodeInput.value.trim();
+            if (!bulkCode) {
+                alert('Por favor, digite um código domínio para aplicar.');
                 return;
             }
 
-            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
-            checkboxes.forEach(checkbox => {
-                const index = parseInt(checkbox.dataset.index);
-                relationData[index].codigoDominio = code;
-                
-                // Atualizar o input na tabela
-                const row = checkbox.closest('tr');
-                const input = row.querySelector('.relation-input');
-                input.value = code;
+            const selectedIndices = relationData
+                .map((relation, index) => relation.selected ? index : -1)
+                .filter(index => index !== -1);
+
+            if (selectedIndices.length === 0) {
+                alert('Por favor, selecione pelo menos uma linha para aplicar o código.');
+                return;
+            }
+
+            selectedIndices.forEach(index => {
+                relationData[index].codigoDominio = bulkCode;
+            });
+
+            // Atualizar inputs na tabela
+            selectedIndices.forEach(index => {
+                const input = relationTableBody.children[index].querySelector('.relation-input');
+                input.value = bulkCode;
             });
 
             bulkCodeInput.value = '';
-            updateSelectionInfo();
-            
-            showStatus(relationStatus, `✅ Código "${code}" aplicado a ${checkboxes.length} conta(s).`, 'success');
+            showStatus(relationStatus, `✅ Código "${bulkCode}" aplicado a ${selectedIndices.length} conta(s)!`, 'success');
         }
 
         function saveRelation() {
-            if (relationData.length === 0) {
-                alert('Nenhuma relação para salvar. Gere a relação primeiro.');
-                return;
-            }
-
-            const dataToSave = {
-                timestamp: new Date().toISOString(),
-                relationData: relationData
-            };
-
-            const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: 'application/json' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `relacao_contas_${new Date().toISOString().slice(0, 10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-
-            showStatus(relationStatus, '✅ Relação salva com sucesso!', 'success');
+            const dataStr = JSON.stringify(relationData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'relacao_contas.json';
+            link.click();
+            
+            showStatus(relationStatus, '✅ Relação de contas salva com sucesso!', 'success');
         }
 
         function loadRelation(event) {
@@ -1011,17 +1130,18 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.relationData && Array.isArray(data.relationData)) {
-                        relationData = data.relationData;
+                    const loadedData = JSON.parse(e.target.result);
+                    
+                    // Validar estrutura dos dados
+                    if (Array.isArray(loadedData) && loadedData.length > 0) {
+                        relationData = loadedData;
                         displayRelationTable();
-                        showStatus(relationStatus, `✅ Relação carregada com sucesso! ${relationData.length} contas carregadas.`, 'success');
+                        showStatus(relationStatus, `✅ Relação carregada com ${relationData.length} contas!`, 'success');
                         
                         // Habilitar botões se necessário
                         generateFileBtn.disabled = false;
                         generateBalanceBtn.disabled = false;
                         bulkInsertContainer.classList.remove('hidden');
-                        saveLoadContainer.classList.remove('hidden');
                     } else {
                         throw new Error('Formato de arquivo inválido');
                     }
@@ -1029,20 +1149,54 @@
                     showStatus(relationStatus, `❌ Erro ao carregar relação: ${error.message}`, 'error');
                 }
             };
-            reader.readAsText(file);
             
-            // Limpar o input
-            event.target.value = '';
+            reader.readAsText(file);
+            event.target.value = ''; // Limpar input
+        }
+
+        function generateFile() {
+            showStatus(fileStatus, '⏳ Gerando arquivo para importação...', 'info');
+            updateProgress(document.getElementById('fileProgress'), document.getElementById('fileProgressFill'), 0);
+            
+            generateFileBtn.disabled = true;
+
+            // Simular progresso
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 20;
+                updateProgress(document.getElementById('fileProgress'), document.getElementById('fileProgressFill'), progress);
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    
+                    // Gerar arquivo CSV
+                    let csvContent = 'Cod. Nat.;Tipo;Nível;Código SPED;Nome da Conta;Código Domínio\n';
+                    
+                    relationData.forEach(relation => {
+                        csvContent += `${relation.codNat};${relation.tipo};${relation.nivel};${relation.codigo};"${relation.nome}";${relation.codigoDominio}\n`;
+                    });
+
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'relacao_contas_dominio.csv';
+                    link.click();
+                    
+                    showStatus(fileStatus, '✅ Arquivo gerado e baixado com sucesso!', 'success');
+                    generateFileBtn.disabled = false;
+                    generateFileBtn.classList.remove('glow');
+                }
+            }, 200);
         }
 
         function showDateModal() {
-            balanceDate.value = ''; // Campo de data vazio
             dateModal.classList.remove('hidden');
             balanceDate.focus();
         }
 
         function hideDateModal() {
             dateModal.classList.add('hidden');
+            balanceDate.value = '';
         }
 
         function formatDateInput(event) {
@@ -1056,285 +1210,69 @@
             event.target.value = value;
         }
 
-        function validateDate(dateString) {
-            const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-            const match = dateString.match(regex);
-            if (!match) return false;
-            
-            const day = parseInt(match[1], 10);
-            const month = parseInt(match[2], 10);
-            const year = parseInt(match[3], 10);
-            
-            if (month < 1 || month > 12) return false;
-            if (day < 1 || day > 31) return false;
-            if (year < 1900 || year > 2100) return false;
-            
-            return true;
-        }
-
         function confirmDateAndGenerateBalance() {
-            const dateValue = balanceDate.value.trim();
-            if (!validateDate(dateValue)) {
+            const dateValue = balanceDate.value;
+            if (!dateValue || dateValue.length !== 10) {
                 alert('Por favor, informe uma data válida no formato DD/MM/AAAA');
                 return;
             }
-            
+
             hideDateModal();
             generateBalance(dateValue);
         }
 
-        function generateFile() {
-            if (!spedData || relationData.length === 0) {
-                showStatus(fileStatus, '❌ Dados não disponíveis. Importe o SPED e gere a relação primeiro.', 'error');
-                return;
-            }
-
-            showStatus(fileStatus, '⏳ Gerando arquivo para importação...', 'info');
-            updateProgress(document.getElementById('fileProgress'), document.getElementById('fileProgressFill'), 0);
-            
-            generateFileBtn.disabled = true;
-
-            try {
-                // Criar mapa de relação para busca rápida
-                const relationMap = {};
-                const historyMap = {};
-                
-                relationData.forEach(item => {
-                    if (item.codigoDominio) {
-                        relationMap[item.codigo] = item.codigoDominio;
-                    }
-                });
-
-                historyData.forEach(item => {
-                    historyMap[item.codigo] = item.descricao;
-                });
-
-                // Simular progresso
-                let progress = 0;
-                const progressInterval = setInterval(() => {
-                    progress += 20;
-                    updateProgress(document.getElementById('fileProgress'), document.getElementById('fileProgressFill'), progress);
-                    
-                    if (progress >= 100) {
-                        clearInterval(progressInterval);
-                        processAndDownloadFile(relationMap, historyMap);
-                    }
-                }, 300);
-
-            } catch (error) {
-                showStatus(fileStatus, `❌ Erro ao gerar arquivo: ${error.message}`, 'error');
-                generateFileBtn.disabled = false;
-            }
-        }
-
-        function processAndDownloadFile(relationMap, historyMap) {
-            try {
-                const outputLines = [];
-
-                spedData.forEach(line => {
-                    let processedLine = line;
-                    const fields = line.split('|');
-                    const recordType = fields[1];
-
-                    // Processar I250 - Movimentação de contas
-                    if (recordType === 'I250') {
-                        const codConta = fields[2];
-                        const codHist = fields[7];
-
-                        // Substituir código da conta se houver mapeamento
-                        if (codConta && relationMap[codConta]) {
-                            fields[2] = relationMap[codConta];
-                        }
-
-                        // Concatenar histórico
-                        if (codHist && historyMap[codHist]) {
-                            const currentHist = fields[8] || '';
-                            fields[8] = historyMap[codHist] + ' ' + currentHist;
-                        }
-
-                        processedLine = fields.join('|');
-                    }
-
-                    outputLines.push(processedLine);
-                });
-
-                // Gerar nome do arquivo baseado na data
-                const now = new Date();
-                const fileName = `SPED_processado_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}.txt`;
-
-                // Download do arquivo
-                const blob = new Blob([outputLines.join('\n')], { type: 'text/plain;charset=windows-1252' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-
-                showStatus(fileStatus, `✅ Arquivo gerado e baixado com sucesso! (${fileName})`, 'success');
-                generateFileBtn.disabled = false;
-
-            } catch (error) {
-                showStatus(fileStatus, `❌ Erro ao gerar arquivo: ${error.message}`, 'error');
-                generateFileBtn.disabled = false;
-            }
-        }
-
-        function generateBalance(dataFim) {
-            if (!spedData || relationData.length === 0 || balanceData.length === 0) {
-                showStatus(balanceStatus, '❌ Dados não disponíveis. Importe o SPED e gere a relação primeiro.', 'error');
-                return;
-            }
-
+        function generateBalance(date) {
             showStatus(balanceStatus, '⏳ Gerando balanço de abertura...', 'info');
             updateProgress(document.getElementById('balanceProgress'), document.getElementById('balanceProgressFill'), 0);
             
             generateBalanceBtn.disabled = true;
 
-            try {
-                // Criar mapa de relação para busca rápida
-                const relationMap = {};
-                relationData.forEach(item => {
-                    if (item.codigoDominio) {
-                        relationMap[soNumeros(item.codigo)] = item.codigoDominio;
-                    }
-                });
-
-                // Simular progresso
-                let progress = 0;
-                const progressInterval = setInterval(() => {
-                    progress += 20;
-                    updateProgress(document.getElementById('balanceProgress'), document.getElementById('balanceProgressFill'), progress);
+            // Simular progresso
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 15;
+                updateProgress(document.getElementById('balanceProgress'), document.getElementById('balanceProgressFill'), progress);
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
                     
-                    if (progress >= 100) {
-                        clearInterval(progressInterval);
-                        processAndDownloadBalance(relationMap, dataFim);
-                    }
-                }, 300);
-
-            } catch (error) {
-                showStatus(balanceStatus, `❌ Erro ao gerar balanço: ${error.message}`, 'error');
-                generateBalanceBtn.disabled = false;
-            }
-        }
-
-        function processAndDownloadBalance(relationMap, dataFim) {
-            try {
-                const outputLines = [];
-                const saldos = [];
-                let totalDeb = 0;
-                let totalCre = 0;
-                let linhasNaoEncontradas = [];
-
-                // Processar registros I155 (saldos de contas)
-                balanceData.forEach(item => {
-                    const codOriginal = item.codigo;
-                    const codTrocar = soNumeros(codOriginal);
-                    const vlrSaldo = item.vlrSaldo;
-                    const tipo = item.tipo;
+                    // Gerar arquivo de balanço
+                    let balanceContent = `Data do Balanço: ${date}\n`;
+                    balanceContent += 'Código SPED;Nome da Conta;Código Domínio;Valor;Tipo\n';
                     
-                    let achou = false;
-                    let codDominio = '';
-
-                    // Buscar na relação
-                    if (relationMap[codTrocar]) {
-                        codDominio = relationMap[codTrocar];
-                        achou = true;
-                    }
-
-                    if (!achou) {
-                        linhasNaoEncontradas.push(`Conta não encontrada na relação: ${codOriginal}`);
-                    }
-
-                    const flag = parseFloat(soNumeros(vlrSaldo)) || 0;
-
-                    if (flag > 0 && achou) {
-                        // Seguindo exatamente o formato do arquivo TXT de exemplo:
-                        // Para débito: |6100|31/08/2020|802||17504,74||SALDO DE ABERTURA EM 31/08/2020|||||
-                        // Para crédito: |6100|31/08/2020||802|232222,22||SALDO DE ABERTURA EM 31/08/2020|||||
-                        if (tipo === 'D') {
-                            // Para débito, a conta vem no 3º campo e o valor no 5º campo
-                            saldos.push(`|6100|${dataFim}|${codDominio}||${vlrSaldo}||SALDO DE ABERTURA EM ${dataFim}|||||`);
-                            totalDeb += flag / 100;
-                        } else {
-                            // Para crédito, a conta vem no 4º campo e o valor no 5º campo
-                            saldos.push(`|6100|${dataFim}||${codDominio}|${vlrSaldo}||SALDO DE ABERTURA EM ${dataFim}|||||`);
-                            totalCre += flag / 100;
+                    balanceData.forEach(balance => {
+                        const account = accountsData.find(acc => acc.codigo === balance.codigo);
+                        const relation = relationData.find(rel => rel.codigo === balance.codigo);
+                        
+                        if (account && relation) {
+                            balanceContent += `${balance.codigo};"${account.nome}";${relation.codigoDominio};${balance.vlrSaldo};${balance.tipo}\n`;
                         }
-                    }
-                });
+                    });
 
-                // Montar arquivo de saída
-                outputLines.push('|6000|V||||');
-                saldos.forEach(saldo => {
-                    outputLines.push(saldo);
-                });
-
-                // Gerar nome do arquivo baseado na data
-                const now = new Date();
-                const fileName = `BALANCO_ABERTURA_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}.txt`;
-
-                // Download do arquivo
-                const blob = new Blob([outputLines.join('\n')], { type: 'text/plain;charset=windows-1252' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-
-                const diferenca = totalDeb - totalCre;
-                let statusMessage = `✅ Balanço gerado com sucesso! (${fileName})<br>`;
-                statusMessage += `📅 Data do balanço: ${dataFim}<br>`;
-                statusMessage += `📊 Total Débitos: R$ ${totalDeb.toFixed(2)}<br>`;
-                statusMessage += `📊 Total Créditos: R$ ${totalCre.toFixed(2)}<br>`;
-                statusMessage += `📊 Diferença: R$ ${diferenca.toFixed(2)}`;
-
-                if (linhasNaoEncontradas.length > 0) {
-                    statusMessage += `<br>⚠️ ${linhasNaoEncontradas.length} conta(s) não encontrada(s) na relação`;
+                    const blob = new Blob([balanceContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `balanco_abertura_${date.replace(/\//g, '_')}.csv`;
+                    link.click();
+                    
+                    showStatus(balanceStatus, '✅ Balanço de abertura gerado e baixado com sucesso!', 'success');
+                    generateBalanceBtn.disabled = false;
+                    generateBalanceBtn.classList.remove('glow');
                 }
-
-                showStatus(balanceStatus, statusMessage, 'success');
-                generateBalanceBtn.disabled = false;
-
-            } catch (error) {
-                showStatus(balanceStatus, `❌ Erro ao gerar balanço: ${error.message}`, 'error');
-                generateBalanceBtn.disabled = false;
-            }
+            }, 150);
         }
 
-        // Função para remover apenas números (equivalente ao soNumeros do AWK)
-        function soNumeros(valor) {
-            return valor.replace(/[^0-9]/g, '');
-        }
-
-        // Função para formatar nome do arquivo (equivalente ao nomearq do AWK)
-        function nomeArq(valor) {
-            return valor.replace(/ /g, '_');
-        }
-
-        // Event listeners para fechar modal com ESC
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && !dateModal.classList.contains('hidden')) {
+        // Fechar modal ao clicar fora dele
+        dateModal.addEventListener('click', function(e) {
+            if (e.target === dateModal) {
                 hideDateModal();
             }
         });
 
-        // Event listener para confirmar com Enter no campo de data
-        balanceDate.addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
+        // Permitir Enter para confirmar data
+        balanceDate.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
                 confirmDateAndGenerateBalance();
-            }
-        });
-
-        // Fechar modal clicando fora dele
-        dateModal.addEventListener('click', function(event) {
-            if (event.target === dateModal) {
-                hideDateModal();
             }
         });
     </script>
